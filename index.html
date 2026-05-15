@@ -60,20 +60,34 @@
             gap: 8px;
         }
 
-        .category-buttons button {
-            padding: 8px;
+        /* 添加分类按钮 蓝色电竞氛围灯 */
+        .add-category-btn {
+            background-color: #00a4ff;
             border: none;
             border-radius: 4px;
             color: #fff;
             cursor: pointer;
             font-size: 14px;
+            padding: 8px;
+            transition: all 0.3s ease;
+        }
+        .add-category-btn:hover {
+            box-shadow: 0 0 8px #0099ff, 0 0 18px rgba(0,170,255,0.6);
         }
 
-        .add-category-btn {
-            background-color: #00a4ff;
-        }
+        /* 分类改名按钮 金色轻奢氛围灯 */
         .rename-category-btn {
             background-color: #ffa500;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 8px;
+            transition: all 0.3s ease;
+        }
+        .rename-category-btn:hover {
+            box-shadow: 0 0 8px #ffcc22, 0 0 18px rgba(230,184,0,0.6);
         }
 
         .main-content {
@@ -103,16 +117,27 @@
             height: 38px;
         }
 
+        /* 上传封面按钮 绿色清新氛围灯 */
         .upload-btn {
             background-color: #28a745;
             color: #fff;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
+        .upload-btn:hover {
+            box-shadow: 0 0 8px #22dd66, 0 0 18px rgba(34,221,102,0.55);
+        }
+
+        /* 批量删除/确认删除 紫色霓虹氛围灯 */
         .del-mode-btn {
             background-color: #ff4757;
             color: #fff;
             cursor: pointer;
             margin-left: auto;
+            transition: all 0.3s ease;
+        }
+        .del-mode-btn:hover {
+            box-shadow: 0 0 8px #9922ff, 0 0 18px rgba(153,34,255,0.6);
         }
 
         #coverFile {
@@ -136,7 +161,6 @@
             cursor: pointer;
         }
 
-        /* 只给封面加氛围灯！ */
         .video-cover {
             width: 100%;
             height: 130px;
@@ -148,7 +172,7 @@
             position: relative;
         }
 
-        /* 选中 → 只在封面显示红色氛围灯 */
+        /* 【保留不变】删除选中封面 原版红色氛围灯 */
         .video-card.selected .video-cover {
             box-shadow: 0 0 0 2px #ff2222, 0 0 12px #ff3333, 0 0 20px rgba(255,51,51,0.6);
         }
