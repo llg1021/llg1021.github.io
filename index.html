@@ -26,6 +26,8 @@
             background-color: #222;
             padding: 20px 0;
             border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar h2 {
@@ -37,6 +39,7 @@
 
         .category-list {
             list-style: none;
+            flex: 1;
         }
 
         .category-list li {
@@ -49,6 +52,30 @@
         .category-list li.active {
             background-color: #333;
             color: #00a4ff;
+        }
+
+        /* 分类按钮 */
+        .category-buttons {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .category-buttons button {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-category-btn {
+            background-color: #00a4ff;
+        }
+        .rename-category-btn {
+            background-color: #ffa500;
         }
 
         /* 右侧主内容区 */
@@ -77,21 +104,32 @@
             border: none;
             border-radius: 4px;
             font-size: 14px;
+            height: 38px;
         }
 
-        .add-video-form button.add-btn {
+        .add-video-form .add-btn {
             background-color: #00a4ff;
             color: #fff;
             cursor: pointer;
         }
-        .add-video-form button.del-mode-btn {
+        .add-video-form .upload-btn {
+            background-color: #666;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-video-form .del-mode-btn {
             background-color: #ff4757;
             color: #fff;
             cursor: pointer;
+            margin-left: auto;
         }
 
-        .add-video-form .cover-input {
-            color: #fff;
+        /* 隐藏原生文件选择框 */
+        #coverFile {
+            display: none;
         }
 
         .main-content h3 {
@@ -159,29 +197,35 @@
     <!-- 左侧分类栏 -->
     <div class="sidebar">
         <h2>视频分类</h2>
-        <ul class="category-list">
+        <ul class="category-list" id="category-list">
             <li class="active" data-category="all">全部</li>
-            <li data-category="tv">AI</li>
-            <li data-category="movie">人兽</li>
-            <li data-category="variety">萝莉</li>
-            <li data-category="anime">剧情</li>
+            <li data-category="tv">电视剧</li>
+            <li data-category="movie">电影</li>
+            <li data-category="variety">综艺</li>
+            <li data-category="anime">动漫</li>
         </ul>
+
+        <!-- 你要的两个按钮 -->
+        <div class="category-buttons">
+            <button class="add-category-btn" onclick="addCategory()">添加分类</button>
+            <button class="rename-category-btn" onclick="renameCategory()">分类改名</button>
+        </div>
     </div>
 
     <!-- 右侧主内容区 -->
     <div class="main-content">
-        <!-- 添加视频表单 -->
         <div class="add-video-form">
+            <button class="add-btn" onclick="addVideo()">添加视频</button>
             <input type="text" id="videoTitle" placeholder="视频名称">
-            <input type="url" id="videoUrl" placeholder="视频地址（支持.mp4/.ts/.m3u8）">
-            <input type="file" id="coverFile" accept="image/*" class="cover-input">
+            <input type="url" id="videoUrl" placeholder="视频地址">
+            <button class="upload-btn" onclick="document.getElementById('coverFile').click()">上传封面</button>
+            <input type="file" id="coverFile" accept="image/*">
             <select id="videoCategory">
                 <option value="tv">电视剧</option>
                 <option value="movie">电影</option>
                 <option value="variety">综艺</option>
                 <option value="anime">动漫</option>
             </select>
-            <button class="add-btn" onclick="addVideo()">添加视频</button>
             <button class="del-mode-btn" id="delModeBtn" onclick="toggleDelMode()">批量删除</button>
         </div>
 
@@ -190,11 +234,81 @@
     </div>
 
     <script>
+        // 分类数据（永久保存）
+        let customCategories = JSON.parse(localStorage.getItem('customCategories')) || [
+            { name: "全部", key: "all" },
+            { name: "电视剧", key: "tv" },
+            { name: "电影", key: "movie" },
+            { name: "综艺", key: "variety" },
+            { name: "动漫", key: "anime" }
+        ];
+
         let videoList = JSON.parse(localStorage.getItem('myVideoList')) || [];
         let currentCategory = "all";
         let delMode = false;
 
-        // 添加视频函数
+        // 渲染分类
+        function renderCategories() {
+            const list = document.getElementById('category-list');
+            const select = document.getElementById('videoCategory');
+            list.innerHTML = '';
+            select.innerHTML = '';
+
+            customCategories.forEach(cat => {
+                if (cat.key !== 'all') {
+                    const opt = document.createElement('option');
+                    opt.value = cat.key;
+                    opt.textContent = cat.name;
+                    select.appendChild(opt);
+                }
+
+                const li = document.createElement('li');
+                li.dataset.category = cat.key;
+                li.textContent = cat.name;
+                if (cat.key === currentCategory) li.classList.add('active');
+                list.appendChild(li);
+            });
+
+            bindCategoryClicks();
+        }
+
+        // 添加分类
+        function addCategory() {
+            const name = prompt('输入新分类名称：');
+            if (!name) return;
+            const key = 'cat_' + Date.now();
+            customCategories.push({ name, key });
+            localStorage.setItem('customCategories', JSON.stringify(customCategories));
+            renderCategories();
+        }
+
+        // 分类改名
+        function renameCategory() {
+            const active = document.querySelector('.category-list li.active');
+            if (!active || active.dataset.category === 'all') {
+                alert('请选择非“全部”的分类再改名！');
+                return;
+            }
+            const key = active.dataset.category;
+            const newName = prompt('输入新名称：', active.textContent);
+            if (!newName) return;
+
+            customCategories = customCategories.map(c => {
+                if (c.key === key) c.name = newName;
+                return c;
+            });
+
+            videoList = videoList.map(v => {
+                if (v.category === key) v.category = key;
+                return v;
+            });
+
+            localStorage.setItem('customCategories', JSON.stringify(customCategories));
+            localStorage.setItem('myVideoList', JSON.stringify(videoList));
+            renderCategories();
+        }
+
+        // 添加视频
         function addVideo() {
             const title = document.getElementById('videoTitle').value.trim();
             const url = document.getElementById('videoUrl').value.trim();
@@ -207,110 +321,106 @@
             }
 
             let coverUrl = "";
-            if (coverFile) {
-                coverUrl = URL.createObjectURL(coverFile);
-            }
+            if (coverFile) coverUrl = URL.createObjectURL(coverFile);
 
             const id = Date.now().toString();
             videoList.push({ id, title, url, cover: coverUrl, category });
-
             localStorage.setItem('myVideoList', JSON.stringify(videoList));
 
             document.getElementById('videoTitle').value = '';
             document.getElementById('videoUrl').value = '';
             document.getElementById('coverFile').value = '';
-
             renderVideos();
-            alert('视频添加成功！');
         }
 
-        // 切换批量删除模式
+        // 批量删除
         function toggleDelMode() {
             delMode = !delMode;
             document.getElementById('delModeBtn').textContent = delMode ? '确认删除' : '批量删除';
-            document.querySelectorAll('.del-checkbox').forEach(cb => {
-                cb.classList.toggle('show', delMode);
-            });
-            if (!delMode) {
-                deleteSelectedVideos();
-            }
+            document.querySelectorAll('.del-checkbox').forEach(cb => cb.classList.toggle('show', delMode));
+            if (!delMode) deleteSelectedVideos();
         }
 
-        // 删除选中的视频
         function deleteSelectedVideos() {
             const checkboxes = document.querySelectorAll('.del-checkbox:checked');
             if (checkboxes.length === 0) return;
-
-            if (!confirm(`确定删除选中的 ${checkboxes.length} 个视频吗？`)) return;
-
-            const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
-            videoList = videoList.filter(v => !idsToDelete.includes(v.id));
+            if (!confirm('确定删除选中的视频？')) return;
+            const ids = Array.from(checkboxes).map(i => i.dataset.id);
+            videoList = videoList.filter(v => !ids.includes(v.id));
             localStorage.setItem('myVideoList', JSON.stringify(videoList));
             renderVideos();
         }
 
-        // 渲染视频列表
+        // 渲染视频
         function renderVideos() {
-            const grid = document.getElementById("video-grid");
-            grid.innerHTML = "";
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = '';
+            const list = currentCategory === 'all' ? videoList : videoList.filter(v => v.category === currentCategory);
 
-            const filteredVideos = currentCategory === "all" 
-                ? videoList 
-                : videoList.filter(v => v.category === currentCategory);
-
-            filteredVideos.forEach(video => {
-                const card = document.createElement("div");
-                card.className = "video-card";
-                card.onclick = () => {
-                    if (!delMode) playVideo(video.url);
-                };
-
+            list.forEach(v => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => { if (!delMode) playVideo(v.url); };
                 card.innerHTML = `
-                    <input type="checkbox" class="del-checkbox" data-id="${video.id}">
-                    <div class="video-cover" style="background: url('${video.cover || ''}') center/cover no-repeat;">
-                        ${!video.cover ? '点击添加封面' : ''}
-                    </div>
-                    <div class="video-info">
-                        <div class="video-title">${video.title}</div>
-                    </div>
+                    <input type="checkbox" class="del-checkbox" data-id="${v.id}">
+                    <div class="video-cover" style="background:url('${v.cover}')center/cover no-repeat;"></div>
+                    <div class="video-info"><div class="video-title">${v.title}</div></div>
                 `;
-
                 grid.appendChild(card);
             });
         }
 
-        // 播放视频（支持m3u8）
+        // 绑定分类点击
+        function bindCategoryClicks() {
+            document.querySelectorAll('.category-list li').forEach(li => {
+                li.addEventListener('click', () => {
+                    document.querySelectorAll('.category-list li').forEach(i => i.classList.remove('active'));
+                    li.classList.add('active');
+                    currentCategory = li.dataset.category;
+                    document.getElementById('category-title').textContent = li.textContent;
+                    renderVideos();
+                });
+            });
+        }
+
+        // 播放（倍速 2/3/4/5）
         function playVideo(url) {
             const win = window.open('', '_blank');
             win.document.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>播放视频</title>
+                    <title>播放</title>
                     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
                     <style>
-                        body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-                        video { max-width: 100%; max-height: 100%; }
+                        *{margin:0;padding:0;box-sizing:border-box}
+                        body{background:#000;display:flex;justify-content:center;align-items:center;height:100vh}
+                        .video-container{position:relative;width:100%;height:100%}
+                        video{width:100%;height:100%;object-fit:contain}
+                        video::-webkit-media-controls{display:none!important}
+                        .controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:10px 20px;display:flex;justify-content:flex-end;gap:15px;opacity:0}
+                        .video-container:hover .controls{opacity:1}
+                        .control-btn{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer}
                     </style>
                 </head>
                 <body>
-                    <video controls id="videoPlayer"></video>
+                    <div class="video-container">
+                        <video id="v"></video>
+                        <div class="controls">
+                            <select class="control-btn" id="speed">
+                                <option value="2">2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                            </select>
+                            <button class="control-btn" onclick="document.fullscreenElement?document.exitFullscreen():document.querySelector('.video-container').requestFullscreen()">全屏</button>
+                        </div>
+                    </div>
                     <script>
-                        const video = document.getElementById('videoPlayer');
-                        const url = '${url}';
-                        if (Hls.isSupported()) {
-                            const hls = new Hls();
-                            hls.loadSource(url);
-                            hls.attachMedia(video);
-                            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                                video.play();
-                            });
-                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                            video.src = url;
-                            video.addEventListener('loadedmetadata', function() {
-                                video.play();
-                            });
-                        }
+                        const v=document.getElementById('v');
+                        if(Hls.isSupported()){const hls=new Hls();hls.loadSource('${url}');hls.attachMedia(v);hls.on(Hls.Events.MANIFEST_PARSED,()=>v.play())}
+                        else{v.src='${url}';v.addEventListener('loadedmetadata',()=>v.play())}
+                        document.getElementById('speed').addEventListener('change',e=>v.playbackRate=e.target.value)
                     <\/script>
                 </body>
                 </html>
@@ -318,18 +428,8 @@
             win.document.close();
         }
 
-        // 分类点击事件
-        document.querySelectorAll(".category-list li").forEach(item => {
-            item.addEventListener("click", function() {
-                document.querySelectorAll(".category-list li").forEach(li => li.classList.remove("active"));
-                this.classList.add("active");
-                currentCategory = this.dataset.category;
-                document.getElementById("category-title").textContent = this.textContent;
-                renderVideos();
-            });
-        });
-
-        // 页面加载完成后渲染
+        // 初始化
+        renderCategories();
         renderVideos();
     </script>
 </body>
