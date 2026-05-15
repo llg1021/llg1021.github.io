@@ -10,134 +10,140 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
         }
 
         body {
             display: flex;
-            background-color: #1a1a1a;
-            color: #fff;
+            background-color: #121212;
+            color: #e0e0e0;
             height: 100vh;
+            overflow: hidden;
         }
 
+        /* ———— 左侧栏 高级质感 ———— */
         .sidebar {
-            width: 180px;
-            background-color: #222;
-            padding: 20px 0;
-            border-right: 1px solid #333;
+            width: 190px;
+            background-color: #1a1a1a;
+            padding: 24px 0;
+            border-right: 1px solid #2a2a2a;
             display: flex;
             flex-direction: column;
         }
 
         .sidebar h2 {
-            color: #00a4ff;
+            color: #ffffff;
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 20px;
+            margin-bottom: 28px;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .category-list {
             list-style: none;
             flex: 1;
+            padding: 0 10px;
         }
 
         .category-list li {
-            padding: 12px 25px;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.25s ease;
+            font-size: 14px;
         }
 
-        .category-list li:hover,
+        .category-list li:hover {
+            background-color: #252525;
+        }
+
         .category-list li.active {
-            background-color: #333;
-            color: #00a4ff;
+            background-color: #2a72ff;
+            color: #fff;
         }
 
+        /* 按钮组 */
         .category-buttons {
-            padding: 10px;
+            padding: 10px 14px;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
-        /* 添加分类按钮 蓝色电竞氛围灯 */
+        .category-buttons button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
         .add-category-btn {
-            background-color: #00a4ff;
-            border: none;
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 8px;
-            transition: all 0.3s ease;
-        }
-        .add-category-btn:hover {
-            box-shadow: 0 0 8px #0099ff, 0 0 18px rgba(0,170,255,0.6);
+            background-color: #2a72ff;
         }
 
-        /* 分类改名按钮 金色轻奢氛围灯 */
         .rename-category-btn {
-            background-color: #ffa500;
-            border: none;
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 8px;
-            transition: all 0.3s ease;
-        }
-        .rename-category-btn:hover {
-            box-shadow: 0 0 8px #ffcc22, 0 0 18px rgba(230,184,0,0.6);
+            background-color: #ffaa33;
         }
 
+        /* ———— 主内容区 ———— */
         .main-content {
             flex: 1;
-            padding: 25px;
+            padding: 28px 32px;
             overflow-y: auto;
+            background-color: #121212;
         }
 
+        /* 上传工具条 */
         .add-video-form {
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
+            background-color: #1a1a1a;
+            padding: 18px 20px;
+            border-radius: 12px;
+            margin-bottom: 28px;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             align-items: center;
+            border: 1px solid #2a2a2a;
         }
 
         .add-video-form input,
-        .add-video-form select,
-        .add-video-form button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
+        .add-video-form select {
+            padding: 10px 14px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #222;
+            color: #fff;
             font-size: 14px;
-            height: 38px;
+            outline: none;
         }
 
-        /* 上传封面按钮 绿色清新氛围灯 */
+        .add-video-form input:focus,
+        .add-video-form select:focus {
+            border-color: #2a72ff;
+        }
+
         .upload-btn {
-            background-color: #28a745;
+            background-color: #22cc55;
             color: #fff;
             cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .upload-btn:hover {
-            box-shadow: 0 0 8px #22dd66, 0 0 18px rgba(34,221,102,0.55);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
         }
 
-        /* 批量删除/确认删除 紫色霓虹氛围灯 */
         .del-mode-btn {
-            background-color: #ff4757;
+            background-color: #ff4444;
             color: #fff;
             cursor: pointer;
+            padding: 10px 14px;
+            border-radius: 8px;
             margin-left: auto;
-            transition: all 0.3s ease;
-        }
-        .del-mode-btn:hover {
-            box-shadow: 0 0 8px #9922ff, 0 0 18px rgba(153,34,255,0.6);
+            border: none;
         }
 
         #coverFile {
@@ -148,48 +154,59 @@
             margin-bottom: 20px;
             font-size: 18px;
             color: #fff;
+            font-weight: 500;
         }
 
+        /* ———— 视频卡片网格 ———— */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 24px;
         }
 
         .video-card {
             position: relative;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .video-cover {
             width: 100%;
-            height: 130px;
-            border-radius: 8px;
-            background-color: #444;
+            height: 110px;
+            border-radius: 10px;
+            background-color: #222;
             background-size: cover;
             background-position: center;
             transition: all 0.3s ease;
-            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        /* 【保留不变】删除选中封面 原版红色氛围灯 */
+        /* ———— 你要的红色氛围灯 100% 保留 ———— */
         .video-card.selected .video-cover {
             box-shadow: 0 0 0 2px #ff2222, 0 0 12px #ff3333, 0 0 20px rgba(255,51,51,0.6);
         }
 
         .video-title {
             text-align: center;
-            margin-top: 8px;
             font-size: 14px;
-            color: #fff;
-            padding: 0 5px;
+            color: #e0e0e0;
+            line-height: 1.4;
+            padding: 0 4px;
         }
 
-        .del-checkbox {
-            display: none !important;
+        /* 滚动条美化 */
+        .main-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
         }
     </style>
 </head>
+
 <body>
     <div class="sidebar">
         <h2>视频分类</h2>
@@ -220,6 +237,7 @@
             </select>
             <button class="del-mode-btn" id="delModeBtn" onclick="toggleDelMode()">批量删除</button>
         </div>
+
         <h3 id="category-title">全部视频</h3>
         <div class="video-grid" id="video-grid"></div>
     </div>
@@ -232,6 +250,7 @@
             { name: "综艺", key: "variety" },
             { name: "动漫", key: "anime" }
         ];
+
         let videoList = JSON.parse(localStorage.getItem('myVideoList')) || [];
         let currentCategory = "all";
         let delMode = false;
@@ -244,7 +263,7 @@
             list.innerHTML = '';
             select.innerHTML = '';
             customCategories.forEach(cat => {
-                if(cat.key !== 'all'){
+                if (cat.key !== 'all') {
                     let opt = document.createElement('option');
                     opt.value = cat.key;
                     opt.textContent = cat.name;
@@ -253,95 +272,95 @@
                 let li = document.createElement('li');
                 li.dataset.category = cat.key;
                 li.textContent = cat.name;
-                if(cat.key === currentCategory) li.classList.add('active');
+                if (cat.key === currentCategory) li.classList.add('active');
                 list.appendChild(li);
             });
             bindCategoryClicks();
         }
 
-        function addCategory(){
+        function addCategory() {
             let name = prompt("输入新分类名");
-            if(!name)return;
-            let key = "cat_"+Date.now();
-            customCategories.push({name,key});
-            localStorage.setItem('customCategories',JSON.stringify(customCategories));
+            if (!name) return;
+            let key = "cat_" + Date.now();
+            customCategories.push({ name, key });
+            localStorage.setItem('customCategories', JSON.stringify(customCategories));
             renderCategories();
         }
 
-        function renameCategory(){
+        function renameCategory() {
             let active = document.querySelector('.category-list li.active');
-            if(!active||active.dataset.category==="all")return alert("不能修改全部");
+            if (!active || active.dataset.category === "all") return alert("不能修改全部");
             let key = active.dataset.category;
-            let newName = prompt("修改名称",active.textContent);
-            if(!newName)return;
-            customCategories = customCategories.map(c=>c.key===key?{...c,name:newName}:c);
-            localStorage.setItem('customCategories',JSON.stringify(customCategories));
+            let newName = prompt("修改名称", active.textContent);
+            if (!newName) return;
+            customCategories = customCategories.map(c => c.key === key ? { ...c, name: newName } : c);
+            localStorage.setItem('customCategories', JSON.stringify(customCategories));
             renderVideos();
         }
 
-        function fileToBase64(file){
-            return new Promise(resolve=>{
+        function fileToBase64(file) {
+            return new Promise(resolve => {
                 let reader = new FileReader();
-                reader.onload=()=>resolve(reader.result);
+                reader.onload = () => resolve(reader.result);
                 reader.readAsDataURL(file);
             })
         }
 
-        async function tryAutoAddVideo(){
+        async function tryAutoAddVideo() {
             let title = document.getElementById('videoTitle').value.trim();
             let url = document.getElementById('videoUrl').value.trim();
             let file = document.getElementById('coverFile').files[0];
-            if(!title||!url||!file||isSaving)return;
-            isSaving=true;
+            if (!title || !url || !file || isSaving) return;
+            isSaving = true;
             let base64 = await fileToBase64(file);
             let cate = document.getElementById('videoCategory').value;
-            videoList.push({id:Date.now()+"",title,url,cover:base64,category:cate});
-            localStorage.setItem('myVideoList',JSON.stringify(videoList));
-            document.getElementById('videoTitle').value="";
-            document.getElementById('videoUrl').value="";
-            document.getElementById('coverFile').value="";
+            videoList.push({ id: Date.now() + "", title, url, cover: base64, category: cate });
+            localStorage.setItem('myVideoList', JSON.stringify(videoList));
+            document.getElementById('videoTitle').value = "";
+            document.getElementById('videoUrl').value = "";
+            document.getElementById('coverFile').value = "";
             renderVideos();
-            setTimeout(()=>isSaving=false,800);
+            setTimeout(() => isSaving = false, 800);
         }
 
-        document.getElementById('videoTitle').addEventListener('input',tryAutoAddVideo);
-        document.getElementById('videoUrl').addEventListener('input',tryAutoAddVideo);
-        document.getElementById('coverFile').addEventListener('change',tryAutoAddVideo);
+        document.getElementById('videoTitle').addEventListener('input', tryAutoAddVideo);
+        document.getElementById('videoUrl').addEventListener('input', tryAutoAddVideo);
+        document.getElementById('coverFile').addEventListener('change', tryAutoAddVideo);
 
-        function toggleDelMode(){
-            delMode=!delMode;
-            document.getElementById('delModeBtn').textContent=delMode?"确认删除":"批量删除";
-            if(!delMode){
-                videoList = videoList.filter(v=>!selectDelIds.includes(v.id));
-                localStorage.setItem('myVideoList',JSON.stringify(videoList));
+        function toggleDelMode() {
+            delMode = !delMode;
+            document.getElementById('delModeBtn').textContent = delMode ? "确认删除" : "批量删除";
+            if (!delMode) {
+                videoList = videoList.filter(v => !selectDelIds.includes(v.id));
+                localStorage.setItem('myVideoList', JSON.stringify(videoList));
                 selectDelIds = [];
             }
             renderVideos();
         }
 
-        function toggleSelectVideo(id,dom){
-            if(!delMode) return;
-            if(selectDelIds.includes(id)){
-                selectDelIds = selectDelIds.filter(i=>i!==id);
+        function toggleSelectVideo(id, dom) {
+            if (!delMode) return;
+            if (selectDelIds.includes(id)) {
+                selectDelIds = selectDelIds.filter(i => i !== id);
                 dom.classList.remove('selected');
-            }else{
+            } else {
                 selectDelIds.push(id);
                 dom.classList.add('selected');
             }
         }
 
-        function renderVideos(){
+        function renderVideos() {
             let grid = document.getElementById('video-grid');
-            grid.innerHTML="";
-            let arr = currentCategory==="all"?videoList:videoList.filter(v=>v.category===currentCategory);
-            arr.forEach(v=>{
+            grid.innerHTML = "";
+            let arr = currentCategory === "all" ? videoList : videoList.filter(v => v.category === currentCategory);
+            arr.forEach(v => {
                 let div = document.createElement('div');
-                div.className="video-card";
-                if(selectDelIds.includes(v.id)) div.classList.add('selected');
-                div.onclick = ()=>{
-                    delMode ? toggleSelectVideo(v.id,div) : playVideo(v.url);
+                div.className = "video-card";
+                if (selectDelIds.includes(v.id)) div.classList.add('selected');
+                div.onclick = () => {
+                    delMode ? toggleSelectVideo(v.id, div) : playVideo(v.url);
                 };
-                div.innerHTML=`
+                div.innerHTML = `
                     <div class="video-cover" style="background-image:url(${v.cover})"></div>
                     <div class="video-title">${v.title}</div>
                 `;
@@ -349,20 +368,20 @@
             })
         }
 
-        function bindCategoryClicks(){
-            document.querySelectorAll('.category-list li').forEach(li=>{
-                li.onclick=()=>{
-                    document.querySelectorAll('.category-list li').forEach(i=>i.classList.remove('active'));
+        function bindCategoryClicks() {
+            document.querySelectorAll('.category-list li').forEach(li => {
+                li.onclick = () => {
+                    document.querySelectorAll('.category-list li').forEach(i => i.classList.remove('active'));
                     li.classList.add('active');
-                    currentCategory=li.dataset.category;
-                    document.getElementById('category-title').textContent=li.textContent;
+                    currentCategory = li.dataset.category;
+                    document.getElementById('category-title').textContent = li.textContent;
                     renderVideos();
                 }
             })
         }
 
-        function playVideo(url){
-            let win = window.open('','_blank');
+        function playVideo(url) {
+            let win = window.open('', '_blank');
             win.document.write(`
             <!DOCTYPE html>
             <html>
