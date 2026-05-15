@@ -20,7 +20,6 @@
             height: 100vh;
         }
 
-        /* 左侧分类栏 */
         .sidebar {
             width: 180px;
             background-color: #222;
@@ -54,7 +53,6 @@
             color: #00a4ff;
         }
 
-        /* 分类按钮 */
         .category-buttons {
             padding: 10px;
             display: flex;
@@ -78,14 +76,12 @@
             background-color: #ffa500;
         }
 
-        /* 右侧主内容区 */
         .main-content {
             flex: 1;
             padding: 25px;
             overflow-y: auto;
         }
 
-        /* 添加视频表单 */
         .add-video-form {
             background-color: #2a2a2a;
             padding: 20px;
@@ -138,16 +134,9 @@
         .video-card {
             position: relative;
             cursor: pointer;
-            border-radius: 8px;
-            padding: 3px;
-            transition: all 0.3s ease;
-        }
-        /* 删除模式选中红色氛围边框 */
-        .video-card.selected {
-            box-shadow: 0 0 8px #ff3333, 0 0 15px rgba(255,51,51,0.6), inset 0 0 6px rgba(255,51,51,0.5);
-            border: 2px solid #ff2222;
         }
 
+        /* 只给封面加氛围灯！ */
         .video-cover {
             width: 100%;
             height: 130px;
@@ -155,11 +144,15 @@
             background-color: #444;
             background-size: cover;
             background-position: center;
-            transition: transform 0.3s;
+            transition: all 0.3s ease;
+            position: relative;
         }
-        .video-card:hover .video-cover{
-            transform: translateY(-5px);
+
+        /* 选中 → 只在封面显示红色氛围灯 */
+        .video-card.selected .video-cover {
+            box-shadow: 0 0 0 2px #ff2222, 0 0 12px #ff3333, 0 0 20px rgba(255,51,51,0.6);
         }
+
         .video-title {
             text-align: center;
             margin-top: 8px;
@@ -167,7 +160,7 @@
             color: #fff;
             padding: 0 5px;
         }
-        /* 彻底隐藏勾选框 */
+
         .del-checkbox {
             display: none !important;
         }
@@ -219,7 +212,6 @@
         let currentCategory = "all";
         let delMode = false;
         let isSaving = false;
-        // 存储选中删除的视频ID
         let selectDelIds = [];
 
         function renderCategories() {
@@ -260,7 +252,7 @@
             if(!newName)return;
             customCategories = customCategories.map(c=>c.key===key?{...c,name:newName}:c);
             localStorage.setItem('customCategories',JSON.stringify(customCategories));
-            renderCategories();
+            renderVideos();
         }
 
         function fileToBase64(file){
@@ -292,26 +284,21 @@
         document.getElementById('videoUrl').addEventListener('input',tryAutoAddVideo);
         document.getElementById('coverFile').addEventListener('change',tryAutoAddVideo);
 
-        // 切换删除模式
         function toggleDelMode(){
             delMode=!delMode;
             document.getElementById('delModeBtn').textContent=delMode?"确认删除":"批量删除";
             if(!delMode){
-                // 退出模式执行删除
-                if(selectDelIds.length>0){
-                    videoList = videoList.filter(v=>!selectDelIds.includes(v.id));
-                    localStorage.setItem('myVideoList',JSON.stringify(videoList));
-                    selectDelIds = [];
-                }
+                videoList = videoList.filter(v=>!selectDelIds.includes(v.id));
+                localStorage.setItem('myVideoList',JSON.stringify(videoList));
+                selectDelIds = [];
             }
             renderVideos();
         }
 
-        // 点击视频卡片切换选中状态
         function toggleSelectVideo(id,dom){
             if(!delMode) return;
             if(selectDelIds.includes(id)){
-                selectDelIds = selectDelIds.filter(item=>item!==id);
+                selectDelIds = selectDelIds.filter(i=>i!==id);
                 dom.classList.remove('selected');
             }else{
                 selectDelIds.push(id);
@@ -326,17 +313,11 @@
             arr.forEach(v=>{
                 let div = document.createElement('div');
                 div.className="video-card";
-                // 刷新还原选中样式
                 if(selectDelIds.includes(v.id)) div.classList.add('selected');
                 div.onclick = ()=>{
-                    if(delMode){
-                        toggleSelectVideo(v.id,div);
-                    }else{
-                        playVideo(v.url);
-                    }
+                    delMode ? toggleSelectVideo(v.id,div) : playVideo(v.url);
                 };
                 div.innerHTML=`
-                    <input type="checkbox" class="del-checkbox" data-id="${v.id}">
                     <div class="video-cover" style="background-image:url(${v.cover})"></div>
                     <div class="video-title">${v.title}</div>
                 `;
@@ -356,7 +337,6 @@
             })
         }
 
-        // 点击自动播放
         function playVideo(url){
             let win = window.open('','_blank');
             win.document.write(`
