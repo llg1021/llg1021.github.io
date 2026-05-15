@@ -85,7 +85,7 @@
             overflow-y: auto;
         }
 
-        /* 添加视频表单 */
+        /* 添加视频表单（删除了添加视频按钮，自动提交） */
         .add-video-form {
             background-color: #2a2a2a;
             padding: 20px;
@@ -107,11 +107,6 @@
             height: 38px;
         }
 
-        .add-video-form .add-btn {
-            background-color: #00a4ff;
-            color: #fff;
-            cursor: pointer;
-        }
         .add-video-form .upload-btn {
             background-color: #666;
             color: #fff;
@@ -215,7 +210,6 @@
     <!-- 右侧主内容区 -->
     <div class="main-content">
         <div class="add-video-form">
-            <button class="add-btn" onclick="addVideo()">添加视频</button>
             <input type="text" id="videoTitle" placeholder="视频名称">
             <input type="url" id="videoUrl" placeholder="视频地址">
             <button class="upload-btn" onclick="document.getElementById('coverFile').click()">上传封面</button>
@@ -308,20 +302,16 @@
             renderCategories();
         }
 
-        // 添加视频
-        function addVideo() {
+        // 自动添加视频：三个条件满足后自动提交
+        function autoAddVideo() {
             const title = document.getElementById('videoTitle').value.trim();
             const url = document.getElementById('videoUrl').value.trim();
             const coverFile = document.getElementById('coverFile').files[0];
             const category = document.getElementById('videoCategory').value;
 
-            if (!title || !url) {
-                alert('请填写视频名称和地址！');
-                return;
-            }
+            if (!title || !url || !coverFile) return;
 
-            let coverUrl = "";
-            if (coverFile) coverUrl = URL.createObjectURL(coverFile);
+            let coverUrl = URL.createObjectURL(coverFile);
 
             const id = Date.now().toString();
             videoList.push({ id, title, url, cover: coverUrl, category });
@@ -332,6 +322,11 @@
             document.getElementById('coverFile').value = '';
             renderVideos();
         }
+
+        // 给三个输入框绑定自动添加事件
+        document.getElementById('videoTitle').addEventListener('input', autoAddVideo);
+        document.getElementById('videoUrl').addEventListener('input', autoAddVideo);
+        document.getElementById('coverFile').addEventListener('change', autoAddVideo);
 
         // 批量删除
         function toggleDelMode() {
@@ -383,44 +378,59 @@
             });
         }
 
-        // 播放（倍速 2/3/4/5）
+        // 播放视频：保留原生控制栏，只修改三点按钮为倍速
         function playVideo(url) {
             const win = window.open('', '_blank');
             win.document.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>播放</title>
+                    <title>播放视频</title>
                     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
                     <style>
-                        *{margin:0;padding:0;box-sizing:border-box}
-                        body{background:#000;display:flex;justify-content:center;align-items:center;height:100vh}
-                        .video-container{position:relative;width:100%;height:100%}
-                        video{width:100%;height:100%;object-fit:contain}
-                        video::-webkit-media-controls{display:none!important}
-                        .controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:10px 20px;display:flex;justify-content:flex-end;gap:15px;opacity:0}
-                        .video-container:hover .controls{opacity:1}
-                        .control-btn{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer}
+                        body { margin: 0; padding: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+                        video { max-width: 100%; max-height: 100%; }
+                        /* 隐藏原生三点菜单 */
+                        video::-webkit-media-controls-enclosure { overflow: hidden; }
+                        video::-webkit-media-controls { overflow: hidden; }
                     </style>
                 </head>
                 <body>
-                    <div class="video-container">
-                        <video id="v"></video>
-                        <div class="controls">
-                            <select class="control-btn" id="speed">
-                                <option value="2">2x</option>
-                                <option value="3">3x</option>
-                                <option value="4">4x</option>
-                                <option value="5">5x</option>
-                            </select>
-                            <button class="control-btn" onclick="document.fullscreenElement?document.exitFullscreen():document.querySelector('.video-container').requestFullscreen()">全屏</button>
-                        </div>
+                    <div style="position: relative;">
+                        <video id="videoPlayer" controls></video>
+                        <!-- 倍速按钮，模拟三点菜单位置 -->
+                        <select style="position: absolute; bottom: 30px; right: 20px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer;" id="speedSelect">
+                            <option value="1">1x</option>
+                            <option value="2" selected>2x</option>
+                            <option value="3">3x</option>
+                            <option value="4">4x</option>
+                            <option value="5">5x</option>
+                        </select>
                     </div>
                     <script>
-                        const v=document.getElementById('v');
-                        if(Hls.isSupported()){const hls=new Hls();hls.loadSource('${url}');hls.attachMedia(v);hls.on(Hls.Events.MANIFEST_PARSED,()=>v.play())}
-                        else{v.src='${url}';v.addEventListener('loadedmetadata',()=>v.play())}
-                        document.getElementById('speed').addEventListener('change',e=>v.playbackRate=e.target.value)
+                        const video = document.getElementById('videoPlayer');
+                        const url = '${url}';
+                        const speedSelect = document.getElementById('speedSelect');
+
+                        // 倍速控制
+                        speedSelect.addEventListener('change', () => {
+                            video.playbackRate = parseFloat(speedSelect.value);
+                        });
+
+                        // 加载视频
+                        if (Hls.isSupported()) {
+                            const hls = new Hls();
+                            hls.loadSource(url);
+                            hls.attachMedia(video);
+                            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                                video.play();
+                            });
+                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                            video.src = url;
+                            video.addEventListener('loadedmetadata', function() {
+                                video.play();
+                            });
+                        }
                     <\/script>
                 </body>
                 </html>
