@@ -302,33 +302,45 @@
             renderCategories();
         }
 
+        // 图片转base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
         // 核心：三个条件都满足 → 自动添加
-        function tryAutoAddVideo() {
+        async function tryAutoAddVideo() {
             const title = document.getElementById('videoTitle').value.trim();
             const url = document.getElementById('videoUrl').value.trim();
             const coverFile = document.getElementById('coverFile').files[0];
 
-            // 三个条件必须都有
             if (!title || !url || !coverFile) return;
             if (isSaving) return;
 
             isSaving = true;
 
-            const category = document.getElementById('videoCategory').value;
-            const coverUrl = URL.createObjectURL(coverFile);
+            try {
+                const base64 = await fileToBase64(coverFile); // 转base64
+                const category = document.getElementById('videoCategory').value;
 
-            const id = Date.now().toString();
-            videoList.push({ id, title, url, cover: coverUrl, category });
-            localStorage.setItem('myVideoList', JSON.stringify(videoList));
+                const id = Date.now().toString();
+                videoList.push({ id, title, url, cover: base64, category });
+                localStorage.setItem('myVideoList', JSON.stringify(videoList));
 
-            // 清空
-            document.getElementById('videoTitle').value = '';
-            document.getElementById('videoUrl').value = '';
-            document.getElementById('coverFile').value = '';
+                // 清空
+                document.getElementById('videoTitle').value = '';
+                document.getElementById('videoUrl').value = '';
+                document.getElementById('coverFile').value = '';
 
-            renderVideos();
+                renderVideos();
+            } catch (e) {
+                console.error('封面处理失败', e);
+            }
 
-            // 防止连续触发
             setTimeout(() => {
                 isSaving = false;
             }, 800);
@@ -386,7 +398,7 @@
             });
         }
 
-        // 播放页：删除倍速按钮，移除原生倍速
+        // 播放页：删除倍速按钮
         function playVideo(url) {
             const win = window.open('', '_blank');
             win.document.write(`
