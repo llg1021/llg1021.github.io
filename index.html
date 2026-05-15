@@ -1,106 +1,92 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的无限视频收藏</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{display:flex;flex-direction:column;height:100vh;background:#111;color:#fff}
-.top-bar{background:#222;padding:10px;display:flex;gap:10px;align-items:center}
-.top-bar button{padding:8px 12px;border:none;border-radius:4px;background:#ff5e57;color:#fff;cursor:pointer}
-#iframe{flex:1;border:none;width:100%}
-.collect-box{background:#1a1a1a;padding:10px;height:220px;overflow-y:auto}
-.collect-box h4{margin-bottom:8px;color:#ff5e57}
-.item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #333}
-.item button{background:#0099ff;color:#fff;border:none;padding:4px 8px;border-radius:3px;cursor:pointer}
-#fileInput{display:none}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的专属视频收藏站</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        h1, h2 {
+            margin-bottom: 20px;
+            color: #ff4757;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .video-card {
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 10px;
+        }
+        .video-card h3 {
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .collect-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .collect-btn.collected {
+            background: #2ed573;
+        }
+        .collection-list {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .collection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #444;
+        }
+        .collection-item:last-child {
+            border-bottom: none;
+        }
+    </style>
 </head>
 <body>
+    <h1>我的视频站（无限收藏版）</h1>
 
-<div class="top-bar">
-  <button onclick="shoucang()">收藏当前视频</button>
-  <button onclick="daochu()">导出备份</button>
-  <button onclick="document.getElementById('fileInput').click()">导入备份</button>
-  <input type="file" id="fileInput" accept=".json" onchange="daoru(event)">
-</div>
+    <div class="video-grid" id="video-list">
+        <!-- 这里可以放你喜欢的视频，我先给你放几个示例 -->
+        <div class="video-card">
+            <h3>示例视频：电影A</h3>
+            <button class="collect-btn" data-id="movieA">收藏</button>
+        </div>
+        <div class="video-card">
+            <h3>示例视频：综艺B</h3>
+            <button class="collect-btn" data-id="showB">收藏</button>
+        </div>
+        <div class="video-card">
+            <h3>示例视频：动漫C</h3>
+            <button class="collect-btn" data-id="animeC">收藏</button>
+        </div>
+    </div>
 
-<iframe id="iframe" src="https://2vgzkeqc69aljl.xyz/recommend"></iframe>
+    <h2>我的无限收藏夹（无数量限制）</h2>
+    <div class="collection-list" id="collection-list"></div>
 
-<div class="collect-box">
-  <h4>我的无限收藏夹（无上限）</h4>
-  <div id="list"></div>
-</div>
-
-<script>
-let list = JSON.parse(localStorage.getItem('my_videos')) || []
-
-function shoucang(){
-  let url = document.getElementById('iframe').src
-  let name = prompt('给这个视频起个名字（方便以后找）：')
-  if(!name)return
-  if(list.some(i=>i.url===url)){alert('已收藏过');return}
-  list.push({name,url})
-  localStorage.setItem('my_videos',JSON.stringify(list))
-  show()
-  alert('收藏成功！')
-}
-
-function show(){
-  let dom = document.getElementById('list')
-  dom.innerHTML = ''
-  list.forEach((item,i)=>{
-    let div = document.createElement('div')
-    div.className='item'
-    div.innerHTML=`
-      <span>${item.name}</span>
-      <div>
-        <button onclick="openV(${i})">打开</button>
-        <button onclick="del(${i})">删除</button>
-      </div>
-    `
-    dom.appendChild(div)
-  })
-}
-
-function openV(i){
-  document.getElementById('iframe').src = list[i].url
-}
-
-function del(i){
-  list.splice(i,1)
-  localStorage.setItem('my_videos',JSON.stringify(list))
-  show()
-}
-
-function daochu(){
-  let blob = new Blob([JSON.stringify(list)],{type:'application/json'})
-  let a = document.createElement('a')
-  a.href=URL.createObjectURL(blob)
-  a.download='我的收藏.json'
-  a.click()
-}
-
-function daoru(e){
-  let f = e.target.files[0]
-  if(!f)return
-  let r = new FileReader()
-  r.onload=function(){
-    try{
-      let data=JSON.parse(r.result)
-      if(Array.isArray(data)){
-        list=data
-        localStorage.setItem('my_videos',JSON.stringify(list))
-        show()
-        alert('导入成功')
-      }
-    }catch(e){alert('文件错误')}
-  }
-  r.readAsText(f)
-}
-
-show()
-</script>
+    <script src="script.js"></script>
 </body>
 </html>
