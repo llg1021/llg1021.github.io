@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的私人视频收藏站</title>
-    <!-- 引入hls.js，支持播放m3u8视频流 -->
+    <title>私人影视基地</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * {
@@ -68,6 +67,7 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .add-video-form input,
@@ -79,10 +79,19 @@
             font-size: 14px;
         }
 
-        .add-video-form button {
+        .add-video-form button.add-btn {
             background-color: #00a4ff;
             color: #fff;
             cursor: pointer;
+        }
+        .add-video-form button.del-mode-btn {
+            background-color: #ff4757;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .add-video-form .cover-input {
+            color: #fff;
         }
 
         .main-content h3 {
@@ -102,11 +111,14 @@
             border-radius: 8px;
             overflow: hidden;
             transition: transform 0.3s;
+            position: relative;
+            cursor: pointer;
         }
 
-        .video-thumbnail {
+        .video-cover {
             width: 100%;
             height: 130px;
+            object-fit: cover;
             background-color: #444;
             display: flex;
             align-items: center;
@@ -121,37 +133,25 @@
 
         .video-title {
             font-size: 14px;
-            margin-bottom: 10px;
             line-height: 1.4;
-        }
-
-        .video-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .video-actions button {
-            flex: 1;
-            padding: 5px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .play-btn {
-            background-color: #00a4ff;
-            color: #fff;
-        }
-
-        .delete-btn {
-            background-color: #ff4757;
-            color: #fff;
         }
 
         .video-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 批量删除勾选框 */
+        .del-checkbox {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            display: none;
+        }
+        .del-checkbox.show {
+            display: block;
         }
     </style>
 </head>
@@ -161,10 +161,10 @@
         <h2>视频分类</h2>
         <ul class="category-list">
             <li class="active" data-category="all">全部</li>
-            <li data-category="tv">电视剧</li>
-            <li data-category="movie">电影</li>
-            <li data-category="variety">综艺</li>
-            <li data-category="anime">动漫</li>
+            <li data-category="tv">AI</li>
+            <li data-category="movie">人兽</li>
+            <li data-category="variety">萝莉</li>
+            <li data-category="anime">剧情</li>
         </ul>
     </div>
 
@@ -174,13 +174,15 @@
         <div class="add-video-form">
             <input type="text" id="videoTitle" placeholder="视频名称">
             <input type="url" id="videoUrl" placeholder="视频地址（支持.mp4/.ts/.m3u8）">
+            <input type="file" id="coverFile" accept="image/*" class="cover-input">
             <select id="videoCategory">
                 <option value="tv">电视剧</option>
                 <option value="movie">电影</option>
                 <option value="variety">综艺</option>
                 <option value="anime">动漫</option>
             </select>
-            <button onclick="addVideo()">添加视频</button>
+            <button class="add-btn" onclick="addVideo()">添加视频</button>
+            <button class="del-mode-btn" id="delModeBtn" onclick="toggleDelMode()">批量删除</button>
         </div>
 
         <h3 id="category-title">全部视频</h3>
@@ -188,14 +190,15 @@
     </div>
 
     <script>
-        // 从浏览器本地存储读取视频列表
         let videoList = JSON.parse(localStorage.getItem('myVideoList')) || [];
         let currentCategory = "all";
+        let delMode = false;
 
         // 添加视频函数
         function addVideo() {
             const title = document.getElementById('videoTitle').value.trim();
             const url = document.getElementById('videoUrl').value.trim();
+            const coverFile = document.getElementById('coverFile').files[0];
             const category = document.getElementById('videoCategory').value;
 
             if (!title || !url) {
@@ -203,29 +206,47 @@
                 return;
             }
 
-            // 生成唯一ID
-            const id = Date.now().toString();
-            videoList.push({ id, title, url, category });
+            let coverUrl = "";
+            if (coverFile) {
+                coverUrl = URL.createObjectURL(coverFile);
+            }
 
-            // 保存到本地存储
+            const id = Date.now().toString();
+            videoList.push({ id, title, url, cover: coverUrl, category });
+
             localStorage.setItem('myVideoList', JSON.stringify(videoList));
 
-            // 清空表单
             document.getElementById('videoTitle').value = '';
             document.getElementById('videoUrl').value = '';
+            document.getElementById('coverFile').value = '';
 
-            // 重新渲染列表
             renderVideos();
             alert('视频添加成功！');
         }
 
-        // 删除视频函数
-        function deleteVideo(id) {
-            if (confirm('确定要删除这个视频吗？')) {
-                videoList = videoList.filter(v => v.id !== id);
-                localStorage.setItem('myVideoList', JSON.stringify(videoList));
-                renderVideos();
+        // 切换批量删除模式
+        function toggleDelMode() {
+            delMode = !delMode;
+            document.getElementById('delModeBtn').textContent = delMode ? '确认删除' : '批量删除';
+            document.querySelectorAll('.del-checkbox').forEach(cb => {
+                cb.classList.toggle('show', delMode);
+            });
+            if (!delMode) {
+                deleteSelectedVideos();
             }
+        }
+
+        // 删除选中的视频
+        function deleteSelectedVideos() {
+            const checkboxes = document.querySelectorAll('.del-checkbox:checked');
+            if (checkboxes.length === 0) return;
+
+            if (!confirm(`确定删除选中的 ${checkboxes.length} 个视频吗？`)) return;
+
+            const idsToDelete = Array.from(checkboxes).map(cb => cb.dataset.id);
+            videoList = videoList.filter(v => !idsToDelete.includes(v.id));
+            localStorage.setItem('myVideoList', JSON.stringify(videoList));
+            renderVideos();
         }
 
         // 渲染视频列表
@@ -240,15 +261,17 @@
             filteredVideos.forEach(video => {
                 const card = document.createElement("div");
                 card.className = "video-card";
+                card.onclick = () => {
+                    if (!delMode) playVideo(video.url);
+                };
 
                 card.innerHTML = `
-                    <div class="video-thumbnail">点击播放</div>
+                    <input type="checkbox" class="del-checkbox" data-id="${video.id}">
+                    <div class="video-cover" style="background: url('${video.cover || ''}') center/cover no-repeat;">
+                        ${!video.cover ? '点击添加封面' : ''}
+                    </div>
                     <div class="video-info">
                         <div class="video-title">${video.title}</div>
-                        <div class="video-actions">
-                            <button class="play-btn" onclick="playVideo('${video.url}')">播放视频</button>
-                            <button class="delete-btn" onclick="deleteVideo('${video.id}')">删除</button>
-                        </div>
                     </div>
                 `;
 
@@ -258,7 +281,6 @@
 
         // 播放视频（支持m3u8）
         function playVideo(url) {
-            // 创建一个新的窗口来播放视频
             const win = window.open('', '_blank');
             win.document.write(`
                 <!DOCTYPE html>
@@ -301,7 +323,6 @@
             item.addEventListener("click", function() {
                 document.querySelectorAll(".category-list li").forEach(li => li.classList.remove("active"));
                 this.classList.add("active");
-
                 currentCategory = this.dataset.category;
                 document.getElementById("category-title").textContent = this.textContent;
                 renderVideos();
