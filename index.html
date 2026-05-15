@@ -85,7 +85,7 @@
             overflow-y: auto;
         }
 
-        /* 添加视频表单（删除了添加视频按钮，自动提交） */
+        /* 添加视频表单（上传封面按钮改成绿色） */
         .add-video-form {
             background-color: #2a2a2a;
             padding: 20px;
@@ -107,8 +107,9 @@
             height: 38px;
         }
 
+        /* 上传封面按钮改成绿色 */
         .add-video-form .upload-btn {
-            background-color: #666;
+            background-color: #28a745;
             color: #fff;
             cursor: pointer;
             display: flex;
@@ -200,7 +201,6 @@
             <li data-category="anime">动漫</li>
         </ul>
 
-        <!-- 你要的两个按钮 -->
         <div class="category-buttons">
             <button class="add-category-btn" onclick="addCategory()">添加分类</button>
             <button class="rename-category-btn" onclick="renameCategory()">分类改名</button>
@@ -228,7 +228,6 @@
     </div>
 
     <script>
-        // 分类数据（永久保存）
         let customCategories = JSON.parse(localStorage.getItem('customCategories')) || [
             { name: "全部", key: "all" },
             { name: "电视剧", key: "tv" },
@@ -241,7 +240,6 @@
         let currentCategory = "all";
         let delMode = false;
 
-        // 渲染分类
         function renderCategories() {
             const list = document.getElementById('category-list');
             const select = document.getElementById('videoCategory');
@@ -266,7 +264,6 @@
             bindCategoryClicks();
         }
 
-        // 添加分类
         function addCategory() {
             const name = prompt('输入新分类名称：');
             if (!name) return;
@@ -276,7 +273,6 @@
             renderCategories();
         }
 
-        // 分类改名
         function renameCategory() {
             const active = document.querySelector('.category-list li.active');
             if (!active || active.dataset.category === 'all') {
@@ -302,7 +298,6 @@
             renderCategories();
         }
 
-        // 自动添加视频：三个条件满足后自动提交
         function autoAddVideo() {
             const title = document.getElementById('videoTitle').value.trim();
             const url = document.getElementById('videoUrl').value.trim();
@@ -323,12 +318,10 @@
             renderVideos();
         }
 
-        // 给三个输入框绑定自动添加事件
         document.getElementById('videoTitle').addEventListener('input', autoAddVideo);
         document.getElementById('videoUrl').addEventListener('input', autoAddVideo);
         document.getElementById('coverFile').addEventListener('change', autoAddVideo);
 
-        // 批量删除
         function toggleDelMode() {
             delMode = !delMode;
             document.getElementById('delModeBtn').textContent = delMode ? '确认删除' : '批量删除';
@@ -346,7 +339,6 @@
             renderVideos();
         }
 
-        // 渲染视频
         function renderVideos() {
             const grid = document.getElementById('video-grid');
             grid.innerHTML = '';
@@ -365,7 +357,6 @@
             });
         }
 
-        // 绑定分类点击
         function bindCategoryClicks() {
             document.querySelectorAll('.category-list li').forEach(li => {
                 li.addEventListener('click', () => {
@@ -378,7 +369,7 @@
             });
         }
 
-        // 播放视频：保留原生控制栏，只修改三点按钮为倍速
+        // 播放视频：倍速按钮移到三点按钮上方
         function playVideo(url) {
             const win = window.open('', '_blank');
             win.document.write(`
@@ -389,17 +380,27 @@
                     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
                     <style>
                         body { margin: 0; padding: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+                        .video-container { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
                         video { max-width: 100%; max-height: 100%; }
-                        /* 隐藏原生三点菜单 */
-                        video::-webkit-media-controls-enclosure { overflow: hidden; }
-                        video::-webkit-media-controls { overflow: hidden; }
+                        /* 倍速按钮移到三点上方 */
+                        .speed-select {
+                            position: absolute;
+                            bottom: 60px;
+                            right: 20px;
+                            background: rgba(0, 0, 0, 0.7);
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                            cursor: pointer;
+                            z-index: 10;
+                        }
                     </style>
                 </head>
                 <body>
-                    <div style="position: relative;">
+                    <div class="video-container">
                         <video id="videoPlayer" controls></video>
-                        <!-- 倍速按钮，模拟三点菜单位置 -->
-                        <select style="position: absolute; bottom: 30px; right: 20px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer;" id="speedSelect">
+                        <select class="speed-select" id="speedSelect">
                             <option value="1">1x</option>
                             <option value="2" selected>2x</option>
                             <option value="3">3x</option>
@@ -412,12 +413,10 @@
                         const url = '${url}';
                         const speedSelect = document.getElementById('speedSelect');
 
-                        // 倍速控制
                         speedSelect.addEventListener('change', () => {
                             video.playbackRate = parseFloat(speedSelect.value);
                         });
 
-                        // 加载视频
                         if (Hls.isSupported()) {
                             const hls = new Hls();
                             hls.loadSource(url);
@@ -438,7 +437,6 @@
             win.document.close();
         }
 
-        // 初始化
         renderCategories();
         renderVideos();
     </script>
