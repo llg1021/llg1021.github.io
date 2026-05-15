@@ -85,7 +85,7 @@
             overflow-y: auto;
         }
 
-        /* 添加视频表单（上传封面按钮改成绿色） */
+        /* 添加视频表单 */
         .add-video-form {
             background-color: #2a2a2a;
             padding: 20px;
@@ -107,7 +107,7 @@
             height: 38px;
         }
 
-        /* 上传封面按钮改成绿色 */
+        /* 上传封面按钮绿色 */
         .add-video-form .upload-btn {
             background-color: #28a745;
             color: #fff;
@@ -240,6 +240,9 @@
         let currentCategory = "all";
         let delMode = false;
 
+        // 防重复标记
+        let isSaving = false;
+
         function renderCategories() {
             const list = document.getElementById('category-list');
             const select = document.getElementById('videoCategory');
@@ -298,29 +301,42 @@
             renderCategories();
         }
 
-        function autoAddVideo() {
+        // 核心：三个条件都满足 → 自动添加
+        function tryAutoAddVideo() {
             const title = document.getElementById('videoTitle').value.trim();
             const url = document.getElementById('videoUrl').value.trim();
             const coverFile = document.getElementById('coverFile').files[0];
-            const category = document.getElementById('videoCategory').value;
 
+            // 三个条件必须都有
             if (!title || !url || !coverFile) return;
+            if (isSaving) return;
 
-            let coverUrl = URL.createObjectURL(coverFile);
+            isSaving = true;
+
+            const category = document.getElementById('videoCategory').value;
+            const coverUrl = URL.createObjectURL(coverFile);
 
             const id = Date.now().toString();
             videoList.push({ id, title, url, cover: coverUrl, category });
             localStorage.setItem('myVideoList', JSON.stringify(videoList));
 
+            // 清空
             document.getElementById('videoTitle').value = '';
             document.getElementById('videoUrl').value = '';
             document.getElementById('coverFile').value = '';
+
             renderVideos();
+
+            // 防止连续触发
+            setTimeout(() => {
+                isSaving = false;
+            }, 800);
         }
 
-        document.getElementById('videoTitle').addEventListener('input', autoAddVideo);
-        document.getElementById('videoUrl').addEventListener('input', autoAddVideo);
-        document.getElementById('coverFile').addEventListener('change', autoAddVideo);
+        // 绑定事件
+        document.getElementById('videoTitle').addEventListener('input', tryAutoAddVideo);
+        document.getElementById('videoUrl').addEventListener('input', tryAutoAddVideo);
+        document.getElementById('coverFile').addEventListener('change', tryAutoAddVideo);
 
         function toggleDelMode() {
             delMode = !delMode;
@@ -369,7 +385,7 @@
             });
         }
 
-        // 播放视频：倍速按钮移到三点按钮上方
+        // 播放页：倍速在三点上方
         function playVideo(url) {
             const win = window.open('', '_blank');
             win.document.write(`
@@ -382,7 +398,6 @@
                         body { margin: 0; padding: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
                         .video-container { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
                         video { max-width: 100%; max-height: 100%; }
-                        /* 倍速按钮移到三点上方 */
                         .speed-select {
                             position: absolute;
                             bottom: 60px;
