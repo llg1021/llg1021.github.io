@@ -141,7 +141,7 @@
         }
 
         .video-card {
-            background-color: #2a2a2a;
+            background-color: transparent;
             border-radius: 8px;
             overflow: hidden;
             transition: transform 0.3s;
@@ -154,6 +154,7 @@
             height: 130px;
             object-fit: cover;
             background-color: #444;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -161,18 +162,18 @@
             font-size: 14px;
         }
 
-        .video-info {
-            padding: 12px;
-        }
-
+        /* 视频标题独立在下方，居中 */
         .video-title {
+            text-align: center;
+            margin-top: 8px;
             font-size: 14px;
             line-height: 1.4;
+            color: #fff;
+            padding: 0 4px;
         }
 
         .video-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         /* 批量删除勾选框 */
@@ -345,10 +346,10 @@
             if (!delMode) deleteSelectedVideos();
         }
 
+        // 已删除确认弹窗
         function deleteSelectedVideos() {
             const checkboxes = document.querySelectorAll('.del-checkbox:checked');
             if (checkboxes.length === 0) return;
-            if (!confirm('确定删除选中的视频？')) return;
             const ids = Array.from(checkboxes).map(i => i.dataset.id);
             videoList = videoList.filter(v => !ids.includes(v.id));
             localStorage.setItem('myVideoList', JSON.stringify(videoList));
@@ -367,7 +368,7 @@
                 card.innerHTML = `
                     <input type="checkbox" class="del-checkbox" data-id="${v.id}">
                     <div class="video-cover" style="background:url('${v.cover}')center/cover no-repeat;"></div>
-                    <div class="video-info"><div class="video-title">${v.title}</div></div>
+                    <div class="video-title">${v.title}</div>
                 `;
                 grid.appendChild(card);
             });
