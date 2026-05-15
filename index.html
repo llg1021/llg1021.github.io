@@ -32,10 +32,23 @@
             flex-direction: column;
         }
 
+        /* 标题 + 图标 布局 */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+
+        .sidebar-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
         .sidebar h2 {
             color: #ffffff;
-            text-align: center;
-            margin-bottom: 28px;
             font-size: 18px;
             font-weight: 600;
             letter-spacing: 1px;
@@ -210,7 +223,12 @@
 
 <body>
     <div class="sidebar">
-        <h2>视频分类</h2>
+        <!-- 标题 + 图标 -->
+        <div class="sidebar-header">
+            <img src="cat.png" class="sidebar-icon" alt="图标">
+            <h2>私人影视基地</h2>
+        </div>
+
         <ul class="category-list" id="category-list">
             <li class="active" data-category="all">全部</li>
             <li data-category="tv">电视剧</li>
