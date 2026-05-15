@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的私人视频收藏站</title>
+    <!-- 引入hls.js，支持播放m3u8视频流 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * {
             margin: 0;
@@ -168,10 +170,10 @@
 
     <!-- 右侧主内容区 -->
     <div class="main-content">
-        <!-- 添加外链视频表单 -->
+        <!-- 添加视频表单 -->
         <div class="add-video-form">
             <input type="text" id="videoTitle" placeholder="视频名称">
-            <input type="url" id="videoUrl" placeholder="视频真实播放地址（.mp4/.ts/.m3u8）">
+            <input type="url" id="videoUrl" placeholder="视频地址（支持.mp4/.ts/.m3u8）">
             <select id="videoCategory">
                 <option value="tv">电视剧</option>
                 <option value="movie">电影</option>
@@ -197,7 +199,7 @@
             const category = document.getElementById('videoCategory').value;
 
             if (!title || !url) {
-                alert('请填写视频名称和真实播放地址！');
+                alert('请填写视频名称和地址！');
                 return;
             }
 
@@ -244,7 +246,7 @@
                     <div class="video-info">
                         <div class="video-title">${video.title}</div>
                         <div class="video-actions">
-                            <button class="play-btn" onclick="window.open('${video.url}', '_blank')">打开视频</button>
+                            <button class="play-btn" onclick="playVideo('${video.url}')">播放视频</button>
                             <button class="delete-btn" onclick="deleteVideo('${video.id}')">删除</button>
                         </div>
                     </div>
@@ -252,6 +254,46 @@
 
                 grid.appendChild(card);
             });
+        }
+
+        // 播放视频（支持m3u8）
+        function playVideo(url) {
+            // 创建一个新的窗口来播放视频
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>播放视频</title>
+                    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
+                    <style>
+                        body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+                        video { max-width: 100%; max-height: 100%; }
+                    </style>
+                </head>
+                <body>
+                    <video controls id="videoPlayer"></video>
+                    <script>
+                        const video = document.getElementById('videoPlayer');
+                        const url = '${url}';
+                        if (Hls.isSupported()) {
+                            const hls = new Hls();
+                            hls.loadSource(url);
+                            hls.attachMedia(video);
+                            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                                video.play();
+                            });
+                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                            video.src = url;
+                            video.addEventListener('loadedmetadata', function() {
+                                video.play();
+                            });
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            win.document.close();
         }
 
         // 分类点击事件
