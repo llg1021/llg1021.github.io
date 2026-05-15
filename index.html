@@ -3,146 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的私人视频库</title>
+    <title>我的私人视频收藏站</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
-        body{display:flex;background:#121212;color:#eee;height:100vh;overflow:hidden;}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
 
-        /* 左侧分类 */
-        .left{width:190px;background:#1e1e1e;padding:30px 0;border-right:1px solid #333;}
-        .left h2{text-align:center;color:#0099ff;margin-bottom:30px;}
-        .menu{list-style:none;}
-        .menu li{padding:14px 25px;cursor:pointer;}
-        .menu li.active,.menu li:hover{background:#292929;color:#0099ff;}
+        body {
+            display: flex;
+            background-color: #1a1a1a;
+            color: #fff;
+            height: 100vh;
+        }
 
-        /* 右侧主区域 */
-        .right{flex:1;padding:25px;overflow-y:auto;}
+        /* 左侧分类栏 */
+        .sidebar {
+            width: 180px;
+            background-color: #222;
+            padding: 20px 0;
+            border-right: 1px solid #333;
+        }
 
-        /* 添加栏 */
-        .add-box{background:#1e1e1e;padding:20px;border-radius:8px;margin-bottom:25px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-        .add-box input{padding:10px;border:none;border-radius:4px;width:320px;background:#292929;color:#fff;outline:none;}
-        .add-box button{padding:10px 18px;background:#0099ff;border:none;border-radius:4px;color:#fff;cursor:pointer;}
+        .sidebar h2 {
+            color: #00a4ff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
 
-        /* 视频网格 */
-        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;}
-        .card{background:#1e1e1e;border-radius:8px;overflow:hidden;}
-        .cover{width:100%;height:120px;background:#292929;display:flex;align-items:center;justify-content:center;color:#888;}
-        .info{padding:12px;}
-        .title{font-size:14px;margin-bottom:10px;line-height:1.5;}
-        .btns{display:flex;gap:6px;}
-        .btns button{flex:1;padding:6px;border:none;border-radius:4px;cursor:pointer;font-size:12px;}
-        .play{background:#0099ff;color:#fff;}
-        .del{background:#f44336;color:#fff;}
+        .category-list {
+            list-style: none;
+        }
+
+        .category-list li {
+            padding: 12px 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .category-list li:hover,
+        .category-list li.active {
+            background-color: #333;
+            color: #00a4ff;
+        }
+
+        /* 右侧主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        /* 添加视频表单 */
+        .add-video-form {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .add-video-form input,
+        .add-video-form select,
+        .add-video-form button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .add-video-form button {
+            background-color: #00a4ff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .main-content h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 130px;
+            background-color: #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .video-info {
+            padding: 12px;
+        }
+
+        .video-title {
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .video-actions button {
+            flex: 1;
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .play-btn {
+            background-color: #00a4ff;
+            color: #fff;
+        }
+
+        .delete-btn {
+            background-color: #ff4757;
+            color: #fff;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
-
-<div class="left">
-    <h2>视频分类</h2>
-    <ul class="menu">
-        <li class="active" data-cat="all">全部</li>
-        <li data-cat="tv">电视剧</li>
-        <li data-cat="movie">电影</li>
-        <li data-cat="zy">综艺</li>
-        <li data-cat="dm">动漫</li>
-    </ul>
-</div>
-
-<div class="right">
-    <div class="add-box">
-        <input type="text" id="urlInput" placeholder="粘贴视频网址，自动获取标题">
-        <select id="catSel" style="padding:10px;background:#292929;color:#fff;border-radius:4px;border:none;">
-            <option value="tv">电视剧</option>
-            <option value="movie">电影</option>
-            <option value="zy">综艺</option>
-            <option value="dm">动漫</option>
-        </select>
-        <button onclick="autoAdd()">自动添加</button>
+    <!-- 左侧分类栏 -->
+    <div class="sidebar">
+        <h2>视频分类</h2>
+        <ul class="category-list">
+            <li class="active" data-category="all">全部</li>
+            <li data-category="tv">电视剧</li>
+            <li data-category="movie">电影</li>
+            <li data-category="variety">综艺</li>
+            <li data-category="anime">动漫</li>
+        </ul>
     </div>
 
-    <div class="grid" id="grid"></div>
-</div>
+    <!-- 右侧主内容区 -->
+    <div class="main-content">
+        <!-- 添加外链视频表单 -->
+        <div class="add-video-form">
+            <input type="text" id="videoTitle" placeholder="视频名称">
+            <input type="url" id="videoUrl" placeholder="视频真实播放地址（.mp4/.ts/.m3u8）">
+            <select id="videoCategory">
+                <option value="tv">电视剧</option>
+                <option value="movie">电影</option>
+                <option value="variety">综艺</option>
+                <option value="anime">动漫</option>
+            </select>
+            <button onclick="addVideo()">添加视频</button>
+        </div>
 
-<script>
-let list = JSON.parse(localStorage.getItem('myVidLib')) || [];
-let nowCat = 'all';
+        <h3 id="category-title">全部视频</h3>
+        <div class="video-grid" id="video-grid"></div>
+    </div>
 
-// 自动添加：粘贴链接，自动生成标题
-function autoAdd(){
-    let url = document.getElementById('urlInput').value.trim();
-    if(!url)return alert('请先粘贴视频网址');
+    <script>
+        // 从浏览器本地存储读取视频列表
+        let videoList = JSON.parse(localStorage.getItem('myVideoList')) || [];
+        let currentCategory = "all";
 
-    // 自动从网址截取当标题
-    let autoTitle = getTitleFromUrl(url);
-    let cat = document.getElementById('catSel').value;
+        // 添加视频函数
+        function addVideo() {
+            const title = document.getElementById('videoTitle').value.trim();
+            const url = document.getElementById('videoUrl').value.trim();
+            const category = document.getElementById('videoCategory').value;
 
-    let obj = {
-        id:Date.now()+'',
-        title:autoTitle,
-        url:url,
-        cat:cat
-    };
-    list.push(obj);
-    localStorage.setItem('myVidLib',JSON.stringify(list));
-    document.getElementById('urlInput').value='';
-    render();
-    alert('添加成功，自动生成标题：\n'+autoTitle);
-}
+            if (!title || !url) {
+                alert('请填写视频名称和真实播放地址！');
+                return;
+            }
 
-// 从网址自动提取标题
-function getTitleFromUrl(u){
-    try{
-        let path = new URL(u).pathname;
-        let name = path.split('/').filter(x=>x).pop() || '未命名视频';
-        return decodeURIComponent(name).replace(/[-_]/g,' ');
-    }catch(e){
-        return '未知视频';
-    }
-}
+            // 生成唯一ID
+            const id = Date.now().toString();
+            videoList.push({ id, title, url, category });
 
-// 删除
-function delVid(id){
-    if(!confirm('确定删除？'))return;
-    list = list.filter(item=>item.id!==id);
-    localStorage.setItem('myVidLib',JSON.stringify(list));
-    render();
-}
+            // 保存到本地存储
+            localStorage.setItem('myVideoList', JSON.stringify(videoList));
 
-// 渲染列表
-function render(){
-    let g = document.getElementById('grid');
-    g.innerHTML='';
-    let arr = nowCat==='all' ? list : list.filter(x=>x.cat===nowCat);
+            // 清空表单
+            document.getElementById('videoTitle').value = '';
+            document.getElementById('videoUrl').value = '';
 
-    arr.forEach(item=>{
-        let card = document.createElement('div');
-        card.className='card';
-        card.innerHTML = `
-            <div class="cover">默认封面</div>
-            <div class="info">
-                <div class="title">${item.title}</div>
-                <div class="btns">
-                    <button class="play" onclick="window.open('${item.url}','_blank')">播放</button>
-                    <button class="del" onclick="delVid('${item.id}')">删除</button>
-                </div>
-            </div>
-        `;
-        g.appendChild(card);
-    });
-}
+            // 重新渲染列表
+            renderVideos();
+            alert('视频添加成功！');
+        }
 
-// 分类切换
-document.querySelectorAll('.menu li').forEach(li=>{
-    li.onclick=function(){
-        document.querySelectorAll('.menu li').forEach(x=>x.classList.remove('active'));
-        this.classList.add('active');
-        nowCat = this.dataset.cat;
-        render();
-    }
-});
+        // 删除视频函数
+        function deleteVideo(id) {
+            if (confirm('确定要删除这个视频吗？')) {
+                videoList = videoList.filter(v => v.id !== id);
+                localStorage.setItem('myVideoList', JSON.stringify(videoList));
+                renderVideos();
+            }
+        }
 
-render();
-</script>
+        // 渲染视频列表
+        function renderVideos() {
+            const grid = document.getElementById("video-grid");
+            grid.innerHTML = "";
 
+            const filteredVideos = currentCategory === "all" 
+                ? videoList 
+                : videoList.filter(v => v.category === currentCategory);
+
+            filteredVideos.forEach(video => {
+                const card = document.createElement("div");
+                card.className = "video-card";
+
+                card.innerHTML = `
+                    <div class="video-thumbnail">点击播放</div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-actions">
+                            <button class="play-btn" onclick="window.open('${video.url}', '_blank')">打开视频</button>
+                            <button class="delete-btn" onclick="deleteVideo('${video.id}')">删除</button>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // 分类点击事件
+        document.querySelectorAll(".category-list li").forEach(item => {
+            item.addEventListener("click", function() {
+                document.querySelectorAll(".category-list li").forEach(li => li.classList.remove("active"));
+                this.classList.add("active");
+
+                currentCategory = this.dataset.category;
+                document.getElementById("category-title").textContent = this.textContent;
+                renderVideos();
+            });
+        });
+
+        // 页面加载完成后渲染
+        renderVideos();
+    </script>
 </body>
 </html>
