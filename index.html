@@ -386,7 +386,7 @@
             });
         }
 
-        // 播放页：倍速在三点上方
+        // 播放页：删除倍速按钮，移除原生倍速
         function playVideo(url) {
             const win = window.open('', '_blank');
             win.document.write(`
@@ -399,39 +399,15 @@
                         body { margin: 0; padding: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
                         .video-container { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
                         video { max-width: 100%; max-height: 100%; }
-                        .speed-select {
-                            position: absolute;
-                            bottom: 50px;
-                            right: 10px;
-                            background: rgba(0, 0, 0, 0.7);
-                            color: white;
-                            border: none;
-                            border-radius: 4px;
-                            padding: 4px 8px;
-                            cursor: pointer;
-                            z-index: 10;
-                        }
                     </style>
                 </head>
                 <body>
                     <div class="video-container">
-                        <video id="videoPlayer" controls></video>
-                        <select class="speed-select" id="speedSelect">
-                            <option value="1">1x</option>
-                            <option value="2" selected>2x</option>
-                            <option value="3">3x</option>
-                            <option value="4">4x</option>
-                            <option value="5">5x</option>
-                        </select>
+                        <video id="videoPlayer" controls controlsList="noplaybackrate nodownload"></video>
                     </div>
                     <script>
                         const video = document.getElementById('videoPlayer');
                         const url = '${url}';
-                        const speedSelect = document.getElementById('speedSelect');
-
-                        speedSelect.addEventListener('change', () => {
-                            video.playbackRate = parseFloat(speedSelect.value);
-                        });
 
                         if (Hls.isSupported()) {
                             const hls = new Hls();
