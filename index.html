@@ -138,6 +138,14 @@
         .video-card {
             position: relative;
             cursor: pointer;
+            border-radius: 8px;
+            padding: 3px;
+            transition: all 0.3s ease;
+        }
+        /* 删除模式选中红色氛围边框 */
+        .video-card.selected {
+            box-shadow: 0 0 8px #ff3333, 0 0 15px rgba(255,51,51,0.6), inset 0 0 6px rgba(255,51,51,0.5);
+            border: 2px solid #ff2222;
         }
 
         .video-cover {
@@ -159,17 +167,9 @@
             color: #fff;
             padding: 0 5px;
         }
-
+        /* 彻底隐藏勾选框 */
         .del-checkbox {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 20px;
-            height: 20px;
-            display: none;
-        }
-        .del-checkbox.show {
-            display: block;
+            display: none !important;
         }
     </style>
 </head>
@@ -219,6 +219,8 @@
         let currentCategory = "all";
         let delMode = false;
         let isSaving = false;
+        // 存储选中删除的视频ID
+        let selectDelIds = [];
 
         function renderCategories() {
             const list = document.getElementById('category-list');
@@ -290,20 +292,31 @@
         document.getElementById('videoUrl').addEventListener('input',tryAutoAddVideo);
         document.getElementById('coverFile').addEventListener('change',tryAutoAddVideo);
 
+        // 切换删除模式
         function toggleDelMode(){
             delMode=!delMode;
             document.getElementById('delModeBtn').textContent=delMode?"确认删除":"批量删除";
-            document.querySelectorAll('.del-checkbox').forEach(cb=>cb.classList.toggle('show',delMode));
-            if(!delMode)deleteSelectedVideos();
+            if(!delMode){
+                // 退出模式执行删除
+                if(selectDelIds.length>0){
+                    videoList = videoList.filter(v=>!selectDelIds.includes(v.id));
+                    localStorage.setItem('myVideoList',JSON.stringify(videoList));
+                    selectDelIds = [];
+                }
+            }
+            renderVideos();
         }
 
-        function deleteSelectedVideos(){
-            let checks = document.querySelectorAll('.del-checkbox:checked');
-            if(checks.length===0)return;
-            let ids = Array.from(checks).map(i=>i.dataset.id);
-            videoList = videoList.filter(v=>!ids.includes(v.id));
-            localStorage.setItem('myVideoList',JSON.stringify(videoList));
-            renderVideos();
+        // 点击视频卡片切换选中状态
+        function toggleSelectVideo(id,dom){
+            if(!delMode) return;
+            if(selectDelIds.includes(id)){
+                selectDelIds = selectDelIds.filter(item=>item!==id);
+                dom.classList.remove('selected');
+            }else{
+                selectDelIds.push(id);
+                dom.classList.add('selected');
+            }
         }
 
         function renderVideos(){
@@ -313,7 +326,15 @@
             arr.forEach(v=>{
                 let div = document.createElement('div');
                 div.className="video-card";
-                div.onclick = ()=>{if(!delMode)playVideo(v.url)};
+                // 刷新还原选中样式
+                if(selectDelIds.includes(v.id)) div.classList.add('selected');
+                div.onclick = ()=>{
+                    if(delMode){
+                        toggleSelectVideo(v.id,div);
+                    }else{
+                        playVideo(v.url);
+                    }
+                };
                 div.innerHTML=`
                     <input type="checkbox" class="del-checkbox" data-id="${v.id}">
                     <div class="video-cover" style="background-image:url(${v.cover})"></div>
